@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 
 class DecryptCommand extends Command
 {
-    public $signature = 'multienv:decrypt';
+    public $signature = 'multenv:decrypt';
 
     public $description = 'Decrypt env files';
 
