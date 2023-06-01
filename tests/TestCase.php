@@ -1,36 +1,24 @@
 <?php
 
-namespace VendorName\Skeleton\Tests;
+namespace IBroStudio\Multenv\Tests;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase as Orchestra;
-use VendorName\Skeleton\SkeletonServiceProvider;
+use IBroStudio\Multenv\MultenvServiceProvider;
 
 class TestCase extends Orchestra
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'VendorName\\Skeleton\\Database\\Factories\\'.class_basename($modelName).'Factory'
-        );
-    }
-
     protected function getPackageProviders($app)
     {
         return [
-            SkeletonServiceProvider::class,
+            MultenvServiceProvider::class,
         ];
     }
 
     public function getEnvironmentSetUp($app)
     {
-        config()->set('database.default', 'testing');
-
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_skeleton_table.php.stub';
-        $migration->up();
-        */
+        File::copy(__DIR__ . '/Mocks/.env.primary', base_path('.env.primary'));
+        File::copy(__DIR__ . '/Mocks/.env.branch', base_path('.env.branch'));
+        File::copy(__DIR__ . '/Mocks/.env.custom', base_path('.env.custom'));
     }
 }
