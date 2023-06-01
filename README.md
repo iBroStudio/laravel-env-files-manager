@@ -1,59 +1,150 @@
-# Manage Laravel env files
+# Laravel Multenv
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/ibrostudio/laravel-env-files-manager.svg?style=flat-square)](https://packagist.org/packages/ibrostudio/laravel-env-files-manager)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/ibrostudio/laravel-env-files-manager/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/ibrostudio/laravel-env-files-manager/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/ibrostudio/laravel-env-files-manager/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/ibrostudio/laravel-env-files-manager/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/ibrostudio/laravel-env-files-manager.svg?style=flat-square)](https://packagist.org/packages/ibrostudio/laravel-env-files-manager)
-
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-env-files-manager.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-env-files-manager)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+Manage multiple .env files in Laravel with automatic encryption/decryption to embed and share your .env files in your repository.
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require ibrostudio/laravel-env-files-manager
+composer require ibrostudio/laravel-multenv
 ```
 
-You can publish and run the migrations with:
+Publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-env-files-manager-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="laravel-env-files-manager-config"
+php artisan vendor:publish --tag="multenv-config"
 ```
 
 This is the contents of the published config file:
 
 ```php
 return [
+
+    'include' => [
+        '.env.primary' => ['encrypt' => true],  // Base env file, will be encrypted to be included in repo
+        '.env.branch' => ['encrypt' => true],   // optional, content override base values, will be encrypted to be included in repo
+        '.env.custom' => ['encrypt' => false],  // optional, content override previous values, exclude this with gitignore
+    ],
 ];
 ```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="laravel-env-files-manager-views"
-```
+You define which .env files you want to manage:
+- a primary .env file, reflecting your production environment with all variables
+- then, you can add one (or more) entries to override some variables (for local use or branch differences)
 
 ## Usage
 
+At the root of your project, create all files defined in the config and populate them with variables.
+
+Add them to your .gitignore:
+
+```
+.env.primary
+.env.branch
+.env.custom
+```
+or
+```
+.env*
+```
+
+
+Then run:
+```bash
+php artisan multenv:merge
+```
+It generates the final .env file, merging variables from all configured .env files.
+
+Each file overrides variables from the previous one.
+
+## Encryption
+
+You can encrypt some .env files to embed them securely in your repo.
+
+**Generate encryption key**
+
+```bash
+php artisan multenv:key
+```
+
+Add it to your .gitignore:
+
+```
+.multenv
+```
+
+**Don't commit your .multenv key in your repo, it is a security risk.**
+
+If you work with people on the repo, share manually the key, IT HAS TO BE SAME for everyone.
+
+**Configure the files to encrypt**
+
+In config/multenv.php, define each file to encrypt with the setting to true
+
 ```php
-$envFilesManager = new IBroStudio\EnvFilesManager();
-echo $envFilesManager->echoPhrase('Hello, IBroStudio!');
+'.env.primary' => ['encrypt' => true]
+```
+
+**Encrypt**
+
+```bash
+php artisan multenv:encrypt
+```
+
+If you use **.env** in your .gitignore, add after:
+
+```
+.env*
+!.env.*.encrypted
+```
+
+**Decrypt**
+
+```bash
+php artisan multenv:decrypt
+```
+
+## Automatic encryption/decryption
+
+You can define some git hooks to automate the processes:
+
+**1. Merge, encrypt and commit**
+
+Create (or modify) a file called ***pre-push*** in .git/hooks and add in it:
+
+```bash
+#!/bin/sh
+
+echo "---- PRE PUSH ----"
+php artisan multienv:encrypt
+git add .env.*.encrypted
+git commit -m 'Auto embed encrypted env files'
+echo "--- PRE PUSH END ---"
+```
+
+Make it executable:
+
+```bash
+chmod +x pre-push
+```
+
+**2. Decrypt and merge**
+
+Create (or modify) a file called ***post-merge*** in .git/hooks and add in it:
+
+```bash
+#!/bin/sh
+
+echo "---- POST MERGE ----"
+php artisan multienv:decrypt
+php artisan multienv:merge
+echo "--- POST MERGE END ---"
+```
+
+Make it executable:
+
+```bash
+chmod +x post-merge
 ```
 
 ## Testing
@@ -65,19 +156,6 @@ composer test
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [iBroStudio](https://github.com/iBroStudio)
-- [All Contributors](../../contributors)
 
 ## License
 

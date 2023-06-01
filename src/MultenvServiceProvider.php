@@ -15,7 +15,7 @@ class MultenvServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('laravel-multenv')
+            ->name('multenv')
             ->hasConfigFile()
             ->hasCommands(
                 DecryptCommand::class,
