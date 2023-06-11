@@ -116,7 +116,7 @@ Create (or modify) a file called ***pre-push*** in .git/hooks and add in it:
 #!/bin/sh
 
 echo "---- PRE PUSH ----"
-php artisan multienv:encrypt
+php artisan multenv:encrypt
 git add .env.*.encrypted
 git commit -m 'Auto embed encrypted env files'
 echo "--- PRE PUSH END ---"
@@ -136,8 +136,8 @@ Create (or modify) a file called ***post-merge*** in .git/hooks and add in it:
 #!/bin/sh
 
 echo "---- POST MERGE ----"
-php artisan multienv:decrypt
-php artisan multienv:merge
+php artisan multenv:decrypt
+php artisan multenv:merge
 echo "--- POST MERGE END ---"
 ```
 
