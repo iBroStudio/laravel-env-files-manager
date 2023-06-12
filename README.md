@@ -1,6 +1,12 @@
 # Laravel Multenv
 
-Manage multiple .env files in Laravel with automatic encryption/decryption to embed and share your .env files in your repository.
+Manage multiple .env files in Laravel with automatic encryption to embed and share your .env files in your repository.
+
+- [Installation](#installation)
+- [Basic usage](#basic-usage)
+- [Encryption](#encryption)
+- [Automatic encryption](#automatic-encryption)
+- [Different env files per GIT branches](#different-env-files-per-git-branches)
 
 ## Installation
 
@@ -20,19 +26,15 @@ This is the contents of the published config file:
 
 ```php
 return [
-
-    'include' => [
-        '.env.primary' => ['encrypt' => true],  // Base env file, will be encrypted to be included in repo
-        '.env.branch' => ['encrypt' => true],   // optional, content override base values, will be encrypted to be included in repo
-        '.env.custom' => ['encrypt' => false],  // optional, content override previous values, exclude this with gitignore
-    ],
+    '.env.primary' => ['encrypt' => true],
+    '.env.custom' => ['encrypt' => false],
 ];
 ```
 You define which .env files you want to manage:
-- a primary .env file, reflecting your production environment with all variables
-- then, you can add one (or more) entries to override some variables (for local use or branch differences)
+- a primary .env file, with all variables
+- then, you can add one (or more) entries to override variables
 
-## Usage
+## Basic usage
 
 At the root of your project, create all files defined in the config and populate them with variables.
 
@@ -40,7 +42,6 @@ Add them to your .gitignore:
 
 ```
 .env.primary
-.env.branch
 .env.custom
 ```
 or
@@ -54,8 +55,6 @@ Then run:
 php artisan multenv:merge
 ```
 It generates the final .env file, merging variables from all configured .env files.
-
-Each file overrides variables from the previous one.
 
 ## Encryption
 
@@ -104,7 +103,7 @@ If you use **.env** in your .gitignore, add after:
 php artisan multenv:decrypt
 ```
 
-## Automatic encryption/decryption
+## Automatic encryption
 
 You can define some git hooks to automate the processes:
 
@@ -146,6 +145,25 @@ Make it executable:
 ```bash
 chmod +x post-merge
 ```
+
+## Different env files per GIT branches
+
+Modify the configuration as following, adding a pattern entry:
+
+```php
+return [
+    '.env.primary' => ['encrypt' => true, 'pattern' => 'branch-*'],
+    '.env.custom' => ['encrypt' => false],
+];
+```
+
+Then, at the root of your project, create env branches files with names based on the pattern.
+
+Example : .env.branch-main
+
+Populate them with variables and use methods like described previously.
+
+**If you want/need to keep safe between branches, use a different multenv key for each branch.**
 
 ## Testing
 

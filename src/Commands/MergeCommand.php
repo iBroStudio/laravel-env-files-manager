@@ -3,7 +3,6 @@
 namespace IBroStudio\Multenv\Commands;
 
 use IBroStudio\Multenv\Exceptions\EmptyVariablesException;
-use IBroStudio\Multenv\Exceptions\EncryptException;
 use IBroStudio\Multenv\Facades\Multenv;
 use Illuminate\Console\Command;
 

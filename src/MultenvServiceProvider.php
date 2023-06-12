@@ -4,9 +4,8 @@ namespace IBroStudio\Multenv;
 
 use IBroStudio\Multenv\Commands\DecryptCommand;
 use IBroStudio\Multenv\Commands\EncryptCommand;
-use IBroStudio\Multenv\Commands\MergeCommand;
 use IBroStudio\Multenv\Commands\KeyCommand;
-use Illuminate\Foundation\Console\KeyGenerateCommand;
+use IBroStudio\Multenv\Commands\MergeCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 

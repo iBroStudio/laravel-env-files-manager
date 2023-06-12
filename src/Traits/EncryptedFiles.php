@@ -5,7 +5,6 @@ namespace IBroStudio\Multenv\Traits;
 use IBroStudio\Multenv\Exceptions\DecryptException;
 use IBroStudio\Multenv\Exceptions\EncryptException;
 use IBroStudio\Multenv\Exceptions\KeyExistsException;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
@@ -28,41 +27,32 @@ trait EncryptedFiles
 
     public function encrypt(): void
     {
-        foreach (config('multenv.include') as $file => $properties) {
-            if ($properties['encrypt']) {
+        $this->files(function ($file, $properties) {
+            if ($properties['encrypt'] && File::exists(base_path($file))) {
 
-                Artisan::call('env:encrypt', [
-                    '--env' => Str::afterLast($file, '.'),
-                    '--key' => $this->getKey(),
-                    '--force' => true,
-                ]);
+                $process = Process::path(base_path())
+                    ->run('php artisan env:encrypt --env='.Str::afterLast($file, '.').' --key='.$this->getKey().' --force');
 
-                $output = Str::squish(Artisan::output());
-
-                if (in_array("ERROR", explode(' ', $output))) {
-                    throw new EncryptException($output);
+                if ($process->failed()) {
+                    throw new EncryptException(Str::squish($process->output()));
                 }
             }
-        }
+        });
     }
 
     public function decrypt(): void
     {
-        foreach (config('multenv.include') as $file => $properties) {
-            if ($properties['encrypt']) {
-                Artisan::call('env:decrypt', [
-                    '--env' => Str::afterLast($file, '.'),
-                    '--key' => $this->getKey(),
-                    '--force' => true,
-                ]);
+        $this->files(function ($file, $properties) {
+            if ($properties['encrypt'] && File::exists(base_path($file.'.encrypted'))) {
 
-                $output = Str::squish(Artisan::output());
+                $process = Process::path(base_path())
+                    ->run('php artisan env:decrypt --env='.Str::afterLast($file, '.').' --key='.$this->getKey().' --force');
 
-                if (in_array("ERROR", explode(' ', $output))) {
-                    throw new DecryptException($output);
+                if ($process->failed()) {
+                    throw new DecryptException(Str::squish($process->output()));
                 }
             }
-        }
+        });
     }
 
     private function getKey(): string
